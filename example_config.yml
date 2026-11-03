@@ -1,0 +1,232 @@
+id: rancher-release-11-2026
+actions:
+  v2.15.4-rc:
+    depends_on: []
+    steps:
+      - id: "dashboard-head-of-branch-v2.15.4-rc1"
+        action: "get-head-of-branch"
+        plugin: "git"
+        data:
+          branch: "release-2.15"
+          repository_name: "dashboard"
+          repository_owner: "rancher"
+        depends_on: []
+      - id: "tag-dashboard-v2.15.4-rc1"
+        action: "create_tag"
+        plugin: "git"
+        data:
+          tag_name: "v2.15.4-rc1"
+          commit_sha: "$dashboard-head-of-branch-v2.15.4-rc1>commit_sha"
+          repository_name: "dashboard"
+          repository_owner: "rancher"
+        depends_on: ["dashboard-head-of-branch-v2.15.4-rc1"]
+      - id: "update-dashboard-ref-v2.15.4-rc1"
+        action: "update_code_create_pr"
+        plugin: "distro_tools"
+        data:
+          pattern: "^ENV\ CATTLE_DASHBOARD_UI_VERSION=.*$"
+          new_value: "ENV CATTLE_DASHBOARD_UI_VERSION=v2.15.4-rc1"
+          branch_name: "update-dashboard-refs-v2.15.4-rc1"
+          repository_name: "rancher"
+          repository_owner: "rancher"
+        depends_on: ["tag-dashboard-v2.15.4-rc1"]
+      - id: "verify-merged-dashboard-ref-v2.15.4-rc1"
+        action: "verify_pr_merged"
+        plugin: "github"
+        data:
+          pr_number: "$update-dashboard-ref-v2.15.4-rc1>pr_number"
+        depends_on: ["update-dashbard-ref-v2.15.4-rc1"]
+
+      - id: "rancher-head-of-branch-v2.15.4-rc1"
+        action: "get-head-of-branch"
+        plugin: "git"
+        data:
+          branch: "release/v2.15"
+          repository_name: "rancher"
+          repository_owner: "rancher"
+        depends_on: ["verify-merged-dashboard-ref-v2.15.4-rc1"]
+      - id: "rancher-prime-head-of-branch-v2.15.4-rc1"
+        action: "get-head-of-branch"
+        plugin: "git"
+        data:
+          branch: "release/v2.15"
+          repository_name: "rancher-prime"
+          repository_owner: "rancher"
+
+      - id: "tag-rancher-v2.15.4-rc1"
+        action: "create_tag"
+        plugin: "git"
+        data:
+          tag_name: "v2.15.4-rc1"
+          commit_sha: "$rancher-head-of-branch-v2.15>commit_sha"
+          repository_name: "rancher"
+          repository_owner: "rancher"
+        depends_on: ["rancher-head-of-branch-2.15"]
+      - id: "tag-rancher-prime-v2.15.4-rc1"
+        action: "create_tag"
+        plugin: "git"
+        data:
+          tag_name: "v2.15.4-rc1"
+          commit_sha: "$rancher-prime-head-of-branch-v2.15>commit_sha"
+          annotation: "$rancher-head-of-branch-v2.15>commit_sha"
+          repository_name: "rancher-prime"
+          repository_owner: "rancher"
+        depends_on:
+          ["rancher-head-of-branch-2.15", "rancher-prime-head-of-branch-2.15"]
+  v2.15.4-ga:
+    depends_on: ["v2.15.4-rc"]
+    steps:
+      - id: "dashboard-head-of-branch-v2.15.4"
+        action: "get-head-of-branch"
+        plugin: "git"
+        data:
+          branch: "release-2.15"
+          repository_name: "dashboard"
+          repository_owner: "rancher"
+        depends_on: []
+      - id: "tag-dashboard-v2.15.4"
+        action: "create_tag"
+        plugin: "git"
+        data:
+          tag_name: "v2.15.4"
+          commit_sha: "$dashboard-head-of-branch-v2.15.4>commit_sha"
+          repository_name: "dashboard"
+          repository_owner: "rancher"
+        depends_on: ["dashboard-head-of-branch-v2.15.4"]
+      - id: "update-dashboard-ref-v2.15.4"
+        action: "update_code_create_pr"
+        plugin: "distro_tools"
+        data:
+          pattern: "^ENV\ CATTLE_DASHBOARD_UI_VERSION=.*$"
+          new_value: "ENV CATTLE_DASHBOARD_UI_VERSION=v2.15.4"
+          branch_name: "update-dashboard-refs-v2.15.4"
+          repository_name: "rancher"
+          repository_owner: "rancher"
+        depends_on: ["tag-dashboard-v2.15.4"]
+      - id: "verify-merged-dashboard-ref-v2.15.4"
+        action: "verify_pr_merged"
+        plugin: "github"
+        data:
+          pr_number: "$update-dashboard-ref-v2.15.4>pr_number"
+        depends_on: ["update-dashboard-ref-v2.15.4"]
+
+      - id: "update-cli-ref-v2.15.4"
+        action: "update_code_create_pr"
+        plugin: "distro_tools"
+        data:
+          pattern: "^ENV\ CATTLE_CLI_VERSION=.*$"
+          new_value: "ENV CATTLE_CLI_VERSION=v2.15.4"
+          branch_name: "update-cli-refs-v2.15.4"
+          repository_name: "rancher"
+          repository_owner: "rancher"
+        depends_on: []
+      - id: "verify-merged-cli-ref-v2.15.4"
+        action: "verify_pr_merged"
+        plugin: "github"
+        data:
+          pr_number: "$update-cli-ref-v2.15.4>pr_number"
+        depends_on: ["update-cli-ref-v2.15.4"]
+
+      - id: "rancher-head-of-branch-v2.15.4"
+        action: "get-head-of-branch"
+        plugin: "git"
+        data:
+          branch: "release/v2.15"
+          repository_name: "rancher"
+          repository_owner: "rancher"
+        depends_on:
+          [
+            "verify-merged-dashboard-ref-v2.15.4",
+            "verify-merged-cli-ref-v2.15.4",
+          ]
+      - id: "rancher-prime-head-of-branch-v2.15.4"
+        action: "get-head-of-branch"
+        plugin: "git"
+        data:
+          branch: "release/v2.15"
+          repository_name: "rancher-prime"
+          repository_owner: "rancher"
+
+      - id: "tag-rancher-v2.15.4"
+        action: "create_tag"
+        plugin: "git"
+        data:
+          tag_name: "v2.15.4"
+          commit_sha: "$rancher-head-of-branch-v2.15.4"
+          repository_name: "rancher"
+          repository_owner: "rancher"
+        depends_on: ["rancher-head-of-branch-v2.15.4"]
+      - id: "tag-rancher-prime-v2.15.4"
+        action: "create_tag"
+        plugin: "git"
+        data:
+          tag_name: "v2.15.4"
+          commit_sha: "$rancher-prime-head-of-branch-v2.15.4"
+          annotation: "$rancher-head-of-branch-v2.15.4"
+          repository_name: "rancher-prime"
+          repository_owner: "rancher"
+        depends_on:
+          [
+            "rancher-head-of-branch-v2.15.4",
+            "rancher-prime-head-of-branch-v2.15.4",
+          ]
+  v2.15.4-cli:
+    depends_on: ["v2.15.4-ga"]
+    steps:
+      - id: "update-rancher-refs-v2.15.4"
+        action: "update_code_go_dep_create_pr"
+        plugin: "distro_tools"
+        data:
+          go_deps:
+            - package: "github.com/rancher/rancher/pkg/apis"
+              commit_sha: "$tag-rancher-v2.15.4>commit_sha"
+            - package: "github.com/rancher/rancher/pkg/client"
+              commit_sha: "$tag-rancher-v2.15.4>commit_sha"
+          branch: "release-2.15"
+          repository_name: "cli"
+          repository_owner: "rancher"
+      - id: "verify-merged-rancher-ref-v2.15.4"
+        action: "verify_pr_merged"
+        plugin: "github"
+        data:
+          pr_number: "$update-rancher-ref-v2.15.4>pr_number"
+        depends_on: ["update-rancher-ref-v2.15.4"]
+      - id: "cli-head-of-branch-v2.15.4"
+        action: "get-head-of-branch"
+        plugin: "git"
+        data:
+          branch: "release-2.15"
+          repository_name: "cli"
+          repository_owner: "rancher"
+        depends_on: ["verify-merged-rancher-ref-v2.15.4"]
+      - id: "tag-cli-v2.15.4"
+        action: "create_tag"
+        plugin: "git"
+        data:
+          tag_name: "v2.15.4"
+          commit_sha: "$cli-head-of-branch-v2.15.4"
+          repository_name: "cli"
+          repository_owner: "rancher"
+        depends_on: ["cli-head-of-branch-v2.15.4"]
+
+  v2.15.4-ovh:
+    depends_on: ["v2.15.4-ga"]
+    steps:
+      - id: "rancher-prime-head-of-branch-v2.15.4-ovh"
+        action: "get-head-of-branch"
+        plugin: "git"
+        data:
+          branch: "release/v2.15"
+          repository_name: "rancher-prime"
+          repository_owner: "rancher"
+
+      - id: "tag-rancher-prime-v2.15.4-ovh"
+        action: "create_tag"
+        plugin: "git"
+        data:
+          tag_name: "v2.15.4-ovh"
+          commit_sha: "$rancher-prime-head-of-branch-v2.15.4-ovh"
+          annotation: "$rancher-head-of-branch-v2.15.4-ovh"
+          repository_name: "rancher-prime"
+          repository_owner: "rancher"
+        depends_on: ["rancher-prime-head-of-branch-v2.15.4-ovh"]
